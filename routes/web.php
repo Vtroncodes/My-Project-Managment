@@ -35,4 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/test', function () {
+    return 'Laravel is working!';
+});
+
+
+
 require __DIR__.'/auth.php';

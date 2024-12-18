@@ -19,8 +19,15 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            $table->enum('role', ['manager', 'developer', 'client','admin'])->default('developer');  // Enum for roles
         });
     }
+// $user = new \App\Models\User();
+// $user->name = 'Admin User';
+// $user->email = 'admin@domain.com';
+// $user->password = bcrypt('12345');  // Make sure to hash the password 
+// $user->role = 'admin';  // Assign the admin role
+// $user->save();
 
     /**
      * Reverse the migrations.
