@@ -12,8 +12,8 @@ class ProjectSeeder extends Seeder
     {
         // Create the project
         $project = Project::create([
-            'project_name' => 'Sample Project',
-            'description' => 'This is a sample project.',
+            'project_name' => 'We Products',
+            'description' => 'To crete a E commerce website for We products.',
             'owner_id' => 1, // Assuming the admin user has an ID of 1
             'start_date' => now(),
             'end_date' => now()->addMonth(),

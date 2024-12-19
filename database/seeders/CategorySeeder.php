@@ -14,8 +14,15 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        Category::create(['name' => 'Front-End']);
-        Category::create(['name' => 'Back-End']);
-        Category::create(['name' => 'Designing']);
+        // Category::create(['name' => 'Front-End']);
+        // Category::create(['name' => 'Back-End']);
+        // Category::create(['name' => 'Designing']);
+        $backEndCategory = Category::where('name', 'Back-End')->first();
+        $frontEndCategory = Category::where('name', 'Front-End')->first();
+
+        Category::create([
+            'name' => 'Bug Resolve',
+            'parent_id' => $backEndCategory ? $backEndCategory->id : null, // Assign parent_id if Back-End exists
+        ]);
     }
 }

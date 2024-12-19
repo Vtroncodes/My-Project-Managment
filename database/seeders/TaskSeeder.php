@@ -17,13 +17,14 @@ class TaskSeeder extends Seeder
 
         if ($user) {
             // Retrieve the category by name
-            $category = Category::where('name', 'Back-End')->first();
+            $frndCategory = Category::where('name', 'Front-End')->first();
+            $bcndCategory = Category::where('name', 'Back-End')->first();
 
-            if ($category) {
+            if ($bcndCategory) {
                 // Create a new task associated with the user and category
                 $task = Task::create([
-                    'category_id' => $category->id,
-                    'description' => 'Implement the sign in protocol', // Optional; omit to use the default
+                    'category_id' => $bcndCategory->id,
+                    'description' => 'Implement the sigin and reset password protocol', // Optional; omit to use the default
                     'project_id' => 1, // Replace with your actual project ID
                     'status' => 'to-do',
                     'assignee_id' => $user->id,
