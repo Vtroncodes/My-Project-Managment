@@ -1,17 +1,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 
-export default function Dashboard({ auth, projects }) {
+export default function Dashboard({ auth, projects, tasks }) {
     const { data, setData, post, errors } = useForm({
         projectName: '',
         taskName: '',
     });
-    // https://chatgpt.com/share/6762e23c-990c-8001-807f-a5bbd6142b02
+
     const handleProjectSubmit = (e) => {
         e.preventDefault();
         post(route('projects.store'), {
             onSuccess: () => {
-                // Reset form fields or show success message
                 setData({ projectName: '', taskName: '' });
             },
             onError: (errors) => {
@@ -67,8 +66,26 @@ export default function Dashboard({ auth, projects }) {
                                 </button>
                             </form>
 
-                            {/* Form for creating new task */}
-                            {/* Similar implementation as above */}
+                            {/* Display Tasks */}
+                            <h3 className="text-lg font-bold mb-4">Your Tasks</h3>
+                            {tasks && tasks.length > 0 ? (
+                               <ul>
+                               {tasks.map((task) => (
+                                   <li key={task.id} className="border-b py-2">
+                                       <div className="font-semibold">Task Name: {task.name}</div>
+                                       <div className="text-sm text-gray-600">Project: {task.project_name}</div> {/* Assuming `project_name` is available */}
+                                       <div className="text-sm text-gray-600">Description: {task.description}</div> {/* Assuming `description` field */}
+                                       <div className="text-sm text-gray-600">Due Date: {task.due_date}</div> {/* Assuming `due_date` field */}
+                                       <div className="text-sm text-gray-600">Status: {task.status}</div>
+                                       <div className="text-sm text-gray-600">Created At: {new Date(task.created_at).toLocaleDateString()}</div> {/* Format date */}
+                                       <div className="text-sm text-gray-600">Updated At: {new Date(task.updated_at).toLocaleDateString()}</div> {/* Format date */}
+                                   </li>
+                               ))}
+                           </ul>
+                           
+                            ) : (
+                                <p>No tasks available.</p>
+                            )}
                         </div>
                     </div>
                 </div>

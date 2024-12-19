@@ -10,7 +10,9 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'project_id', 'status'];
+
+    protected $fillable = ['name', 'status', 'project_id', 'owner_id'];
+
 
     public function project()
     {
@@ -21,4 +23,3 @@ class Task extends Model
         return $this->morphMany(Attachment::class, 'attachmentable');
     }
 }
-
