@@ -10,22 +10,6 @@ use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
-    // public function index()
-    // {
-    //     // Fetch projects with their tasks for the authenticated user
-    //     $projects = Project::where('owner_id', auth()->id())->with('tasks')->get();
-
-    //     // Fetch tasks related to the projects for the authenticated user
-    //     $tasks = Task::whereIn('project_id', $projects->pluck('id'))->get();
-
-    //     return Inertia::render('Dashboard', [
-    //         'auth' => [
-    //             'user' => auth()->user(),
-    //         ],
-    //         'projects' => $projects,  // Projects with their tasks
-    //         'tasks' => $tasks,        // Tasks linked to the projects of the authenticated user
-    //     ]);
-    // }
     public function index()
     {
         // Fetch projects with their tasks, and also load the related project data for each task
@@ -45,20 +29,52 @@ class ProjectController extends Controller
         ]);
     }
 
-
+    public function create()
+    {
+        return view('projects.create');
+    }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
+        $validated = $request->validate([
+            'project_name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'status' => 'required|string',
+            'email_url' => 'nullable|url',
         ]);
 
-        Project::create($request->only(['name', 'description']));
-
-        return redirect()->route('dashboard')->with('success', 'Project created successfully.');
+        Project::create($validated);
+        return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
 
+    public function show(Project $project)
+    {
+        return view('projects.show', compact('project'));
+    }
+
+    public function edit(Project $project)
+    {
+        return view('projects.edit', compact('project'));
+    }
+
+    public function update(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'project_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|string',
+            'email_url' => 'nullable|url',
+        ]);
+
+        $project->update($validated);
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
+    }
+
+    public function destroy(Project $project)
+    {
+        $project->delete();
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
+    }
     public function dashboard()
     {
         $projects = Project::all(); // Retrieve all projects
