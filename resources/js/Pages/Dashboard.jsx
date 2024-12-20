@@ -1,14 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Dashboard({ auth, projects, tasks, categories }) {
     console.log({ auth, projects, tasks, categories });
+
     const { data, setData, post, errors } = useForm({
         projectName: '',
     });
 
     const [darkMode, setDarkMode] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [filteredTasks, setFilteredTasks] = useState(tasks); // To store tasks based on category selection
 
     const toggleDarkMode = () => setDarkMode(!darkMode);
 
@@ -20,23 +23,46 @@ export default function Dashboard({ auth, projects, tasks, categories }) {
     };
 
     // Recursive Component for Hierarchical Categories
-    const CategoriesList = ({ categories }) => {
-        console.log(categories);
+    const CategoriesList = ({ categories, onSelectCategory }) => {
         if (!categories || categories.length === 0) return null;
 
         return (
-            <ul>
+            <ul className="list-disc ml-6">
                 {categories.map((category) => (
-                    <li key={category.id}>
-                        <strong>{category.name}</strong>
+                    <li key={category.id} className="mb-2">
+                        <button
+                            className="font-bold text-blue-600 hover:underline"
+                            onClick={() => onSelectCategory(category.id)}
+                        >
+                            {category.name}
+                        </button>
                         {category.children && category.children.length > 0 && (
-                            <CategoriesList categories={category.children} />
+                            <div className="ml-4">
+                                <CategoriesList
+                                    categories={category.children}
+                                    onSelectCategory={onSelectCategory}
+                                />
+                            </div>
                         )}
                     </li>
                 ))}
             </ul>
         );
     };
+
+    // Handle category selection and filter tasks
+    const handleCategorySelect = (categoryId) => {
+        setSelectedCategory(categoryId);
+        const filtered = tasks.filter((task) => task.category_id === categoryId); // Assuming tasks have a category_id
+        setFilteredTasks(filtered);
+    };
+
+    // Reset tasks when no category is selected
+    useEffect(() => {
+        if (!selectedCategory) {
+            setFilteredTasks(tasks);
+        }
+    }, [selectedCategory, tasks]);
 
     return (
         <AuthenticatedLayout
@@ -63,7 +89,7 @@ export default function Dashboard({ auth, projects, tasks, categories }) {
                         {/* Categories Section */}
                         <div className="p-6">
                             <h3 className="text-lg font-bold mb-4">Categories</h3>
-                            <CategoriesList categories={categories} />
+                            <CategoriesList categories={categories} onSelectCategory={handleCategorySelect} />
                         </div>
 
                         {/* Projects Section */}
@@ -90,34 +116,14 @@ export default function Dashboard({ auth, projects, tasks, categories }) {
                                     <p>No projects available.</p>
                                 )}
                             </div>
-
-                            <h3 className="text-lg font-bold mb-4">Create a New Project</h3>
-                            <form onSubmit={handleProjectSubmit} className="mb-6">
-                                <input
-                                    type="text"
-                                    value={data.projectName}
-                                    onChange={(e) => setData('projectName', e.target.value)}
-                                    placeholder="Project Name"
-                                    className={`border-gray-300 rounded w-full mb-2 p-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'}`}
-                                />
-                                {errors.projectName && (
-                                    <div className="text-red-500 text-sm">{errors.projectName}</div>
-                                )}
-                                <button
-                                    type="submit"
-                                    className={`px-4 py-2 rounded ${darkMode ? 'bg-blue-600' : 'bg-blue-500'} text-white hover:opacity-90`}
-                                >
-                                    Create Project
-                                </button>
-                            </form>
                         </div>
 
                         {/* Tasks Section */}
                         <div className="p-6">
                             <h3 className="text-lg font-bold mb-4">Your Tasks</h3>
-                            {tasks.length > 0 ? (
+                            {filteredTasks.length > 0 ? (
                                 <div className="grid grid-cols-3 gap-4">
-                                    {tasks.map((task) => {
+                                    {filteredTasks.map((task) => {
                                         const project = projects.find((proj) => proj.id === task.project_id);
                                         const projectName = project ? project.project_name : 'Unknown Project';
 

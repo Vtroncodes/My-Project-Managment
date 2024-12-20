@@ -4,9 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\categoryController;
+use App\Http\Controllers\DisplayAllController;
+
 /*
 |--------------------------------------------------------------------------|
 | Web Routes                                                               |
@@ -23,15 +22,9 @@ Route::get('/', function () {
     ]);
 });
 
-// Remove the duplicate dashboard route and only keep the one using the controller
+// Dashboard route using DisplayAllController
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [ProjectController::class, 'index'])->name('dashboard');
-
-    // Project Routes
-    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
-
-    // Task Routes
-    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::get('/dashboard', [DisplayAllController::class, 'index'])->name('dashboard');
 });
 
 Route::middleware('auth')->group(function () {
@@ -39,7 +32,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-Route::resource('categories', categoryController::class);
 
 require __DIR__.'/auth.php';

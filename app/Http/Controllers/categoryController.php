@@ -15,24 +15,7 @@ class categoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    // public function index()
-    // {
-    //     // Fetch categories in a hierarchical structure
-    //     $categories = Category::whereNull('parent_id')
-    //         ->with('children') // Eager load the children categories
-    //         ->get();
-
-    //     // Fetch all categories with parent-child relationships for additional use cases
-    //     $allCategories = Category::with('parent', 'children')->get();
-
-    //     return Inertia::render('Dashboard', [
-    //         'auth' => [
-    //             'user' => auth()->user(),
-    //         ],
-    //         'categories' => $categories, // Hierarchical categories
-    //         'allCategories' => $allCategories, // Flat list with relationships
-    //     ]);
-    // }
+   
 
     public function index()
     {
