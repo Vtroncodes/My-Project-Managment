@@ -10,11 +10,30 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description'];
+    protected $fillable = [
+        'project_name',
+        'description',
+        'file_attachment_id',
+        'owner_id',
+        'start_date',
+        'end_date',
+        'status',
+        'email_url',
+    ];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function fileAttachment()
+    {
+        return $this->belongsTo(Attachment::class, 'file_attachment_id');
+    }
 
     public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->hasMany(Task::class, 'project_id');
     }
     public function attachments(): MorphMany
     {

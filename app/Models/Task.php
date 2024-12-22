@@ -22,4 +22,8 @@ class Task extends Model
     {
         return $this->morphMany(Attachment::class, 'attachmentable');
     }
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }
