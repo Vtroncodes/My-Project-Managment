@@ -39,5 +39,9 @@ class Project extends Model
     {
         return $this->morphMany(Attachment::class, 'attachmentable');
     }
+    // In Project.php
+    public function workLogs()
+    {
+        return $this->hasMany(WorkLog::class);
+    }
 }
-

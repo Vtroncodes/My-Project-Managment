@@ -11,8 +11,12 @@ class Task extends Model
     use HasFactory;
 
 
-    protected $fillable = ['name', 'status', 'project_id', 'owner_id'];
+    protected $fillable = ['project_id', 'description', 'priority', 'category_id', 'assignee_id','due_date','email_url'];
 
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
+    }
 
     public function project()
     {
@@ -25,5 +29,10 @@ class Task extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+    // In Task.php
+    public function workLogs()
+    {
+        return $this->hasMany(WorkLog::class);
     }
 }

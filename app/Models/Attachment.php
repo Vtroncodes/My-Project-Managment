@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Attachment extends Model
 {
-    protected $fillable = [
-        'file_url',
-        'file_type',
-    ];
+    protected $fillable = ['file_url', 'file_type', 'attachmentable_type', 'attachmentable_id'];
 
     /**
      * Get the parent attachable model (project or task).
