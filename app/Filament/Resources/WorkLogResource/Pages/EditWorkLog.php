@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\WorkLogResource\Pages;
+namespace App\Filament\Resources\WorklogResource\Pages;
 
-use App\Filament\Resources\WorkLogResource;
+use App\Filament\Resources\WorklogResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-class EditWorkLog extends EditRecord
+class EditWorklog extends EditRecord
 {
-    protected static string $resource = WorkLogResource::class;
+    protected static string $resource = WorklogResource::class;
 
     protected function getHeaderActions(): array
     {

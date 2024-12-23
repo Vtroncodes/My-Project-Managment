@@ -14,16 +14,15 @@ return new class extends Migration
     Schema::create('work_logs', function (Blueprint $table) {
         $table->id();
         $table->unsignedBigInteger('task_id');
-        $table->unsignedBigInteger('assignee_id');
-        $table->integer('hours');
-        $table->text('description');
-        $table->timestamps();
-
+        $table->unsignedBigInteger('assignee_id')->nullable(); // Optional: can be nullable
+        $table->integer('hours')->default(0); // Default to 0
+        $table->text('description')->default(' '); // Default to empty string
+        $table->timestamps();    
         $table->foreign('task_id')->references('id')->on('tasks');
         $table->foreign('assignee_id')->references('id')->on('users');
-    });
+    });    
+    
 }
-
 
     /**
      * Reverse the migrations.

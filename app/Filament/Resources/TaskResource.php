@@ -16,8 +16,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TimePicker;
 
+use Filament\Tables\Columns\TextColumn;
 class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
@@ -94,31 +94,30 @@ class TaskResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('project.project_name')
+                TextColumn::make('project.project_name')
                     ->label('Project')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->label('Task Description')
                     ->wrap()
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('priority')
+                TextColumn::make('priority')
                     ->label('Priority')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('assignee.name')
+                TextColumn::make('assignee.name')
                     ->label('Assigned To')
                     ->sortable(),
 
-
-                Tables\Columns\TextColumn::make('due_date')
+                TextColumn::make('due_date')
                     ->label('Due Date')
                     ->date()
                     ->sortable(),

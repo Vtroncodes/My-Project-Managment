@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class WorkLog extends Model
 {
     use HasFactory;
-    // In WorkLog.php
+    protected $fillable = ['task_id', 'assignee_id', 'hours', 'description', 'task_id'];
+    
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');

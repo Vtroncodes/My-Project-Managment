@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\Task;
+use App\Models\User;
 use App\Models\Project;
 use App\Models\Category;
 
@@ -27,6 +28,7 @@ class WorkLogResource extends Resource
     {
         return $form
             ->schema([
+
                 Forms\Components\Select::make('project_id')
                     ->label('Project')
                     ->options(Project::all()->pluck('project_name', 'id'))
@@ -37,18 +39,18 @@ class WorkLogResource extends Resource
                         // Clear the task_id field when a new project is selected
                         $set('task_id', null);
                     }),
-                    Forms\Components\Select::make('task_id')
+                Forms\Components\Select::make('task_id')
                     ->label('Task')
                     ->options(function (callable $get) {
                         // Get the logged-in user
                         $user = auth()->user();
                         $projectId = $get('project_id'); // Get the selected project_id
-                
+
                         // Only fetch tasks if a project is selected and the task is assigned to the current user
                         if (!$projectId) {
                             return [];
                         }
-                
+
                         // Filter tasks by project_id and assignee_id
                         return Task::where('project_id', $projectId)
                             ->where('assignee_id', $user->id)  // Filter by the logged-in user
@@ -56,14 +58,23 @@ class WorkLogResource extends Resource
                     })
                     ->searchable()
                     ->required(),
-                
 
-                Forms\Components\Textarea::make('work_log')
+                Forms\Components\Hidden::make('assignee_id')
+                    ->default(auth()->user()->id),  
+   
+                Forms\Components\TextInput::make('assignee_name')
+                    ->label('Assignee Name')
+                    ->default(function () {
+                        // Get the authenticated user's name based on their assignee_id
+                        return auth()->user()->name ?? 'No Assignee';  // Use the authenticated user's name
+                    })
+                    ->readonly(),  // Make the name field read-only
+                Forms\Components\Textarea::make('hours')
                     ->label('Hour Log')
                     ->required(),
 
-                Forms\Components\Textarea::make('comment')
-                    ->label('Comment')
+                Forms\Components\Textarea::make('description')
+                    ->label('Description')
                     ->nullable(),
 
                 Forms\Components\Select::make('status')
