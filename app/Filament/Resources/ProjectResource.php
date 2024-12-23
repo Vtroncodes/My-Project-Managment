@@ -10,9 +10,12 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Tables;
+use Forms\Components\Text;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Comment;
+use Parallax\FilamentComments\Forms\Components\Comments;
 
 class ProjectResource extends Resource
 {
@@ -100,18 +103,18 @@ class ProjectResource extends Resource
                         }
                     }, Attachment::getEnumValues('file_type'))
                 )
-                ->columnSpan('sm')  // Adjust column layout if required
+                ->columnSpan('sm')  
                 ->afterStateUpdated(function (callable $set, $state) {
-                    // Upload the file and store the URL in the 'attachments' table
+                  
                     if ($state) {
-                        // Store the file in the specified disk and make sure the path is public
+                    
                         $filePath = $state->store('attachments', 'project_uploads_dir');  // Save the file to storage
 
-                        // Create a new record in the attachments table
+                       
                         $attachment = Attachment::create([
-                            'attachmentable_type' => 'App\Models\Project',  // The model that the attachment is related to
-                            'attachmentable_id' => $set('project_id'),  // The project ID the attachment belongs to
-                            'file_url' => $filePath,  // Store the file URL
+                            'attachmentable_type' => 'App\Models\Project', 
+                            'attachmentable_id' => $set('project_id'),  
+                            'file_url' => $filePath,  
                             'file_type' => $state->getMimeType(),  // Store the file's MIME type (e.g., PDF, JPEG, etc.)
                         ]);
 
@@ -121,6 +124,26 @@ class ProjectResource extends Resource
                             ->update(['file_attachment_id' => $attachment->id]);  // Save the attachment ID in the projects table
                     }
                 }),
+
+                Forms\Components\Repeater::make('comments')
+                ->schema([
+                    $commentId = Comment::createForProject(
+                        $projectId = 'project_id',  // Replace with the actual project ID
+                        auth()->user()->id,  // Get the authenticated user ID
+                        $content = 'comments' // The content from the form input
+                    ),
+                    
+                    // Optionally, fetch the comment by its ID
+                    $comment = Comment::getById($commentId)
+                        ->label('Comments')
+                        ->disabled(),  // Optional: disable editing comments from the form
+                ])
+                ->default(function ($get, $set) {
+                    // Automatically fetch comments for the related project
+                    $projectId = $get('project_id');
+                    return $projectId ? $projectId->comments()->orderBy('created_at', 'desc')->get() : [];
+                }),
+
 
         ]);
     }
@@ -134,6 +157,15 @@ class ProjectResource extends Resource
                 Tables\Columns\TextColumn::make('description')->label('Description')->limit(50),
                 Tables\Columns\TextColumn::make('status')->label('Status')->sortable(),
                 Tables\Columns\TextColumn::make('owner.name')->label('Owner')->sortable(),
+
+                Tables\Columns\TextColumn::make('comments')
+                    ->label('Latest Comment')
+                    ->sortable()
+                    ->getStateUsing(function ($record) {
+                        // Get the latest comment for the project (or task)
+                        $latestComment = $record->comments()->latest()->first();
+                        return $latestComment ? $latestComment->content : 'No comments';
+                    }),
                 Tables\Columns\TextColumn::make('created_at')->label('Created At')->dateTime(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Updated At')->dateTime(),
             ])

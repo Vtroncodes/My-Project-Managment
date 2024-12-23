@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-
+use App\Models\Comments;
 class Project extends Model
 {
     use HasFactory;
@@ -43,5 +43,9 @@ class Project extends Model
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
+    }
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }
