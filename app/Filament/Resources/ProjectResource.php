@@ -19,7 +19,7 @@ class ProjectResource extends Resource
     protected static ?string $model = Project::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-  
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
@@ -75,12 +75,12 @@ class ProjectResource extends Resource
                 ->required(),
 
             Forms\Components\TextInput::make('email_url')
-                ->label('Email url'),     
-    
-            Forms\Components\FileUpload::make('file_url')
+                ->label('Email url'),
+
+            Forms\Components\FileUpload::make('file_attachment_id')  // This is where the file will be uploaded
                 ->label('File Attachment')
-                ->disk('project_uploads_dir')             
-                ->visibility('public')
+                ->disk('project_uploads_dir')  // Store file in the configured disk
+                ->visibility('public')  // Make the file publicly accessible if needed
                 ->acceptedFileTypes(
                     array_map(function ($fileType) {
                         switch ($fileType) {
@@ -100,7 +100,27 @@ class ProjectResource extends Resource
                         }
                     }, Attachment::getEnumValues('file_type'))
                 )
-                ->columnSpan('sm'), // Adjust column layout if required
+                ->columnSpan('sm')  // Adjust column layout if required
+                ->afterStateUpdated(function (callable $set, $state) {
+                    // Upload the file and store the URL in the 'attachments' table
+                    if ($state) {
+                        // Store the file in the specified disk and make sure the path is public
+                        $filePath = $state->store('attachments', 'project_uploads_dir');  // Save the file to storage
+
+                        // Create a new record in the attachments table
+                        $attachment = Attachment::create([
+                            'attachmentable_type' => 'App\Models\Project',  // The model that the attachment is related to
+                            'attachmentable_id' => $set('project_id'),  // The project ID the attachment belongs to
+                            'file_url' => $filePath,  // Store the file URL
+                            'file_type' => $state->getMimeType(),  // Store the file's MIME type (e.g., PDF, JPEG, etc.)
+                        ]);
+
+                        // Now store the attachment ID in the project
+                        DB::table('projects')
+                            ->where('id', $set('project_id'))
+                            ->update(['file_attachment_id' => $attachment->id]);  // Save the attachment ID in the projects table
+                    }
+                }),
 
         ]);
     }
