@@ -28,79 +28,62 @@ class WorkLogResource extends Resource
     {
         return $form
             ->schema([
-
+                // Dropdown for selecting a project
                 Forms\Components\Select::make('project_id')
                     ->label('Project')
-                    ->options(Project::all()->pluck('project_name', 'id'))
+                    ->options(Project::all()->pluck('project_name', 'id'))  // All projects
                     ->searchable()
                     ->required()
-                    ->reactive() // Mark this field as reactive
+                    ->reactive()  // Make this field reactive to update tasks
                     ->afterStateUpdated(function (callable $set) {
-                        // Clear the task_id field when a new project is selected
-                        $set('task_id', null);
+                        $set('task_id', null);  // Clear the task_id when the project is changed
                     }),
+
+                // Dropdown for tasks, which is reactive based on selected project
                 Forms\Components\Select::make('task_id')
                     ->label('Task')
                     ->options(function (callable $get) {
-                        // Get the logged-in user
-                        $user = auth()->user();
-                        $projectId = $get('project_id'); // Get the selected project_id
-
-                        // Only fetch tasks if a project is selected and the task is assigned to the current user
+                        $projectId = $get('project_id');  // Get selected project ID
                         if (!$projectId) {
                             return [];
                         }
-
-                        // Filter tasks by project_id and assignee_id
                         return Task::where('project_id', $projectId)
-                            ->where('assignee_id', $user->id)  // Filter by the logged-in user
+
                             ->pluck('description', 'id');
                     })
                     ->searchable()
                     ->required(),
 
+                // Hidden field for assignee_id, defaulting to the current user's ID
                 Forms\Components\Hidden::make('assignee_id')
-                    ->default(auth()->user()->id),  
-   
+                    ->default(auth()->user()->id),
+
+                // Text field to display the assignee's name, read-only
                 Forms\Components\TextInput::make('assignee_name')
                     ->label('Assignee Name')
-                    ->default(function () {
-                        // Get the authenticated user's name based on their assignee_id
-                        return auth()->user()->name ?? 'No Assignee';  // Use the authenticated user's name
-                    })
-                    ->readonly(),  // Make the name field read-only
+                    ->default(auth()->user()->name)  // Default to the authenticated user's name
+                    ->readonly(),
+
+                // Textarea for entering hours logged
                 Forms\Components\Textarea::make('hours')
                     ->label('Hour Log')
                     ->required(),
 
+                // Textarea for entering a description
                 Forms\Components\Textarea::make('description')
                     ->label('Description')
                     ->nullable(),
 
+                // Select field for status
                 Forms\Components\Select::make('status')
                     ->label('Status')
-                    ->options(function () {
-                        // Fetch the column details for the 'status' field
-                        $column = DB::select("SHOW COLUMNS FROM tasks WHERE Field = 'status'");
-                        $type = $column[0]->Type ?? null;
-
-                        if ($type) {
-                            // Extract enum values from the column definition
-                            preg_match('/enum\((.*)\)/', $type, $matches);
-                            $enumValues = isset($matches[1]) ? explode(',', $matches[1]) : [];
-
-                            // Clean enum values and return as options
-                            return array_combine(
-                                array_map(fn($value) => trim($value, "'"), $enumValues),
-                                array_map(fn($value) => trim($value, "'"), $enumValues)
-                            );
-                        }
-
-                        return [];
-                    })
+                    ->options([
+                        'Pending' => 'Pending',
+                        'In Progress' => 'In Progress',
+                        'Completed' => 'Completed',
+                    ])
                     ->searchable()
                     ->required(),
-
             ]);
     }
 
@@ -109,11 +92,14 @@ class WorkLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('project.project_name')->label('Project')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('task.project.project_name')
+                    ->label('Project')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('task.description')->label('Task')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('work_log')->label('Work Log')->wrap(),
-                Tables\Columns\TextColumn::make('comment')->label('Comment')->wrap(),
-                Tables\Columns\TextColumn::make('status')->label('Status')->sortable(),
+                Tables\Columns\TextColumn::make('hours')->label('Hours')->wrap(),
+                Tables\Columns\TextColumn::make('description')->label('Description')->wrap(),
+                Tables\Columns\TextColumn::make('task.status')->label('Status')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Logged At')->dateTime(),
             ])
             ->filters([

@@ -22,15 +22,17 @@ class Task extends Model
     {
         return $this->belongsTo(Project::class);
     }
+    
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachmentable');
     }
+
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
-    // In Task.php
+
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
