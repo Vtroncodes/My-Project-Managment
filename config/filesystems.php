@@ -57,7 +57,9 @@ return [
         ],
         'project_uploads_dir' => [
             'driver' => 'local',
-            'root' => public_path('uploads/project-uploads'),
+            'root' => storage_path('uploads/project_uploads_dir'),
+            'url' => env('APP_URL') . '/storage/uploads/project_uploads_dir',
+            'visibility' => 'public',
         ],
 
     ],

@@ -5,18 +5,21 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Attachment;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Tables;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+  
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
@@ -72,21 +75,32 @@ class ProjectResource extends Resource
                 ->required(),
 
             Forms\Components\TextInput::make('email_url')
-                ->label('Email url'),
-
-                Forms\Components\FileUpload::make('file_url')
+                ->label('Email url'),     
+    
+            Forms\Components\FileUpload::make('file_url')
                 ->label('File Attachment')
-                ->disk('project_uploads_dir') // Use the custom disk defined in filesystems.php
-                ->acceptedFileTypes([
-                    'application/pdf', 
-                    'image/jpeg', 
-                    'image/png', 
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-                    'application/msword'
-                ]) // Specify allowed file types
-                ->visibility('public') // Make the file publicly accessible if needed
+                ->disk('project_uploads_dir')             
+                ->visibility('public')
+                ->acceptedFileTypes(
+                    array_map(function ($fileType) {
+                        switch ($fileType) {
+                            case 'pdf':
+                                return 'application/pdf';
+                            case 'jpg':
+                            case 'jpeg':
+                                return 'image/jpeg';
+                            case 'png':
+                                return 'image/png';
+                            case 'xlsx':
+                                return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                            case 'docs':
+                                return 'application/msword';
+                            default:
+                                return null;
+                        }
+                    }, Attachment::getEnumValues('file_type'))
+                )
                 ->columnSpan('sm'), // Adjust column layout if required
-            
 
         ]);
     }
