@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('owner_id');
             $table->date('start_date');
             $table->date('end_date');
-            $table->enum('status', ['pending', 'in-progress', 'completed', 'new'])->default('pending');
+            $table->enum('status', ['pending', 'in-progress', 'completed', 'new'])->default('new');
             $table->timestamps();
             $table->string('email_url')->nullable();
     
