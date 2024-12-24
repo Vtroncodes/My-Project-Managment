@@ -23,7 +23,7 @@ class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-briefcase';
 
     // Define the form for creating and editing tasks
     public static function form(Form $form): Form
