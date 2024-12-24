@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 
+use App\Filament\Resources\TaskResource\RelationManagers\WorkLogsRelationManager;
+
 use Filament\Tables\Columns\TextColumn;
 
 class TaskResource extends Resource
@@ -192,6 +194,7 @@ class TaskResource extends Resource
     {
         return [
             // Add any relation managers if necessary, e.g., for related tasks under projects
+            WorklogsRelationManager::class,
         ];
     }
 
