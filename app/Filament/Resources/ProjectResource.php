@@ -25,90 +25,50 @@ class ProjectResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-s-sparkles';
 
     public static function form(Forms\Form $form): Forms\Form
-{
-    return $form->schema([
-        // First Row
-        Forms\Components\TextInput::make('project_name')
-            ->label('Project Name')
-            ->required()
-            ->placeholder('Enter the project name here')
-            ->prefixIcon('heroicon-o-clipboard')
-            ->columnSpan(4), // Takes 4/12 columns
-
-        Forms\Components\Select::make('owner_id')
-            ->label('Author')
-            ->options(fn() => User::whereIn('role', ['manager', 'admin', 'client'])->pluck('name', 'id'))
-            ->searchable()
-            ->required()
-            ->columnSpan(4), // Takes 4/12 columns
-
-        Forms\Components\TextInput::make('description')
-            ->label('Project Description')
-            ->required()
-            ->placeholder('Enter the project description here')
-            ->columnSpan(4), // Takes 4/12 columns
-
-        // Second Row
-        Forms\Components\DatePicker::make('start_date')
-            ->label('Start Date')
-            ->default(now()->toDateString())
-            ->format('Y-m-d')
-            ->columnSpan(3), // Takes 3/12 columns
-
-        Forms\Components\DatePicker::make('end_date')
-            ->label('End Date')
-            ->format('Y-m-d')
-            ->columnSpan(3), // Takes 3/12 columns
-
-        Forms\Components\Select::make('status')
-            ->label('Status')
-            ->options(function () {
-                $column = DB::select("SHOW COLUMNS FROM projects WHERE Field = 'status'");
-                $type = $column[0]->Type ?? null;
-
-                if ($type) {
-                    preg_match('/enum\((.*)\)/', $type, $matches);
-                    $enumValues = isset($matches[1]) ? explode(',', $matches[1]) : [];
-
-                    return array_combine(
-                        array_map(fn($value) => trim($value, "'"), $enumValues),
-                        array_map(fn($value) => trim($value, "'"), $enumValues)
-                    );
-                }
-
-                return [];
-            })
-            ->searchable()
-            ->required()
-            ->columnSpan(3), // Takes 3/12 columns
-
-        Forms\Components\TextInput::make('email_url')
-            ->label('Email URL')
-            ->placeholder('Enter the email URL here')
-            ->columnSpan(3), // Takes 3/12 columns
-
-        // Third Row
-        Forms\Components\FileUpload::make('file_attachment_id')
-            ->label('File Attachment')
-            ->disk('project_uploads_dir')
-            ->visibility('public')
-            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword'])
-            ->columnSpan(12), // Takes 6/12 columns
-
-        Forms\Components\Repeater::make('comments')
-            ->label('Comments')
-            ->relationship('comments')
-            ->schema([
-                Forms\Components\Textarea::make('content')
-                    ->required()
-                    ->label('Comment Content'),
-                Forms\Components\Hidden::make('user_id')
-                    ->default(fn() => auth()->id()),
-            ])
-            ->createItemButtonLabel('Add Comment')
-            ->columnSpan(12), // Takes 6/12 columns
-    ])->columns(12); // Define the grid system with 12 columns
-}
+    {
+        return $form->schema([
+            Forms\Components\TextInput::make('project_name')
+                ->label('Project Name')
+                ->required()
+                ->placeholder('Enter the project name...')
+                ->prefixIcon('heroicon-o-squares-2x2')
+                ->columnSpan(4)
+                ->extraAttributes(['class' => 'bg-red-800 border-2 border-blue-500 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500']),
+    
+            Forms\Components\Select::make('owner_id')
+                ->label('Author')
+                ->options(fn() => User::whereIn('role', ['manager', 'admin', 'client'])->pluck('name', 'id'))
+                ->searchable()
+                ->required()
+                ->columnSpan(4)
+                ->extraAttributes(['class' => 'bg-red-800 border-2 border-blue-500 rounded-md p-2']),
+    
+            Forms\Components\FileUpload::make('attachment')
+                ->label('File Attachment')
+                ->disk('project_uploads_dir')
+                ->directory(' ')
+                ->visibility('public')
+                ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword'])
+                ->columnSpan(12)
+                ->extraAttributes(['class' => 'border-2 border-blue-500 rounded-md p-2']),
+    
+            Forms\Components\Repeater::make('comments')
+                ->label('Comments')
+                ->relationship('comments')
+                ->schema([
+                    Forms\Components\Textarea::make('content')
+                        ->required()
+                        ->label('Comment Content'),
+                    Forms\Components\Hidden::make('user_id')
+                        ->default(fn() => auth()->id()),
+                ])
+                ->createItemButtonLabel('Add Comment')
+                ->columnSpan(12)
+                ->extraAttributes(['class' => 'shadow-lg rounded-lg p-6']),
+    
+        ])->columns(12);
+    }
+    
 
 
     public static function table(Tables\Table $table): Tables\Table
