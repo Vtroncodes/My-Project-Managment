@@ -26,6 +26,8 @@ class WorkLogResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $inputClass = 'bg-blue-100 border-2 border-blue-500 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500';
+        $fileClass = 'bg-gray-100 border-2 border-gray-500 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500';
         return $form
             ->schema([
                 // Dropdown for selecting a project
@@ -37,7 +39,10 @@ class WorkLogResource extends Resource
                     ->reactive()  // Make this field reactive to update tasks
                     ->afterStateUpdated(function (callable $set) {
                         $set('task_id', null);  // Clear the task_id when the project is changed
-                    }),
+
+                    })
+                    ->extraAttributes(['class' => $inputClass]),
+
 
                 // Dropdown for tasks, which is reactive based on selected project
                 Forms\Components\Select::make('task_id')
@@ -52,27 +57,36 @@ class WorkLogResource extends Resource
                             ->pluck('description', 'id');
                     })
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->extraAttributes(['class' => $inputClass]),
 
                 // Hidden field for assignee_id, defaulting to the current user's ID
-                Forms\Components\Hidden::make('assignee_id')
-                    ->default(auth()->user()->id),
+                Forms\Components\select::make('assignee_id')
+                    ->options(User::all()->pluck('name', 'id')->toArray())
+                    ->searchable()
+                    ->required()
+                  
+                    ->extraAttributes(['class' => $inputClass]),
+
 
                 // Text field to display the assignee's name, read-only
                 Forms\Components\TextInput::make('assignee_name')
                     ->label('Assignee Name')
                     ->default(auth()->user()->name)  // Default to the authenticated user's name
-                    ->readonly(),
+                    ->readonly()
+                    ->extraAttributes(['class' => $inputClass]),
 
                 // Textarea for entering hours logged
                 Forms\Components\Textarea::make('hours')
                     ->label('Hour Log')
-                    ->required(),
+                    ->required()
+                    ->extraAttributes(['class' => $inputClass]),
 
                 // Textarea for entering a description
                 Forms\Components\Textarea::make('description')
                     ->label('Description')
-                    ->nullable(),
+                    ->nullable()
+                    ->extraAttributes(['class' => $fileClass]),
 
                 // Select field for status
                 Forms\Components\Select::make('status')
@@ -83,7 +97,8 @@ class WorkLogResource extends Resource
                         'Completed' => 'Completed',
                     ])
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->extraAttributes(['class' => $inputClass]),
             ]);
     }
 
