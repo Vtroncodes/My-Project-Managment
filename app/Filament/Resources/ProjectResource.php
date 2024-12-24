@@ -25,122 +25,91 @@ class ProjectResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-s-sparkles';
 
     public static function form(Forms\Form $form): Forms\Form
-    {
-        return $form->schema([
-            Forms\Components\TextInput::make('project_name')
-                ->label('Project Name')
-                ->required()
-                ->placeholder('Enter the project name here') // Add placeholder
-                ->prefixIcon('heroicon-o-clipboard'), // Add an icon
+{
+    return $form->schema([
+        // First Row
+        Forms\Components\TextInput::make('project_name')
+            ->label('Project Name')
+            ->required()
+            ->placeholder('Enter the project name here')
+            ->prefixIcon('heroicon-o-clipboard')
+            ->columnSpan(4), // Takes 4/12 columns
 
-            Forms\Components\Select::make('owner_id')
-                ->label('Author')
-                ->options(fn() => User::whereIn('role', ['manager', 'admin', 'client'])
-                    ->pluck('name', 'id'))
-                ->searchable()
-                ->required(),
+        Forms\Components\Select::make('owner_id')
+            ->label('Author')
+            ->options(fn() => User::whereIn('role', ['manager', 'admin', 'client'])->pluck('name', 'id'))
+            ->searchable()
+            ->required()
+            ->columnSpan(4), // Takes 4/12 columns
 
+        Forms\Components\TextInput::make('description')
+            ->label('Project Description')
+            ->required()
+            ->placeholder('Enter the project description here')
+            ->columnSpan(4), // Takes 4/12 columns
 
-            Forms\Components\TextInput::make('description')
-                ->label('Project Description')
-                ->required(),
+        // Second Row
+        Forms\Components\DatePicker::make('start_date')
+            ->label('Start Date')
+            ->default(now()->toDateString())
+            ->format('Y-m-d')
+            ->columnSpan(3), // Takes 3/12 columns
 
-            Forms\Components\DatePicker::make('start_date')
-                ->label('Start date')
-                ->default(now()->toDateString())  // Optionally set the default value to today's date
-                ->format('Y-m-d') // Format for date (adjust to your needs)
-                ->columnSpan(''), // Adjust column layout as needed
+        Forms\Components\DatePicker::make('end_date')
+            ->label('End Date')
+            ->format('Y-m-d')
+            ->columnSpan(3), // Takes 3/12 columns
 
-            Forms\Components\DatePicker::make('end_date')
-                ->label('End date')
-                ->format('Y-m-d') // Format for date (adjust to your needs)
-                ->columnSpan('8'), // Adjust column layout as needed
+        Forms\Components\Select::make('status')
+            ->label('Status')
+            ->options(function () {
+                $column = DB::select("SHOW COLUMNS FROM projects WHERE Field = 'status'");
+                $type = $column[0]->Type ?? null;
 
-            Forms\Components\Select::make('status')
-                ->label('Status')
-                ->options(function () {
-                    // Fetch the column details for the 'status' field
-                    $column = DB::select("SHOW COLUMNS FROM projects WHERE Field = 'status'");
-                    $type = $column[0]->Type ?? null;
+                if ($type) {
+                    preg_match('/enum\((.*)\)/', $type, $matches);
+                    $enumValues = isset($matches[1]) ? explode(',', $matches[1]) : [];
 
-                    if ($type) {
-                        // Extract enum values from the column definition
-                        preg_match('/enum\((.*)\)/', $type, $matches);
-                        $enumValues = isset($matches[1]) ? explode(',', $matches[1]) : [];
+                    return array_combine(
+                        array_map(fn($value) => trim($value, "'"), $enumValues),
+                        array_map(fn($value) => trim($value, "'"), $enumValues)
+                    );
+                }
 
-                        // Clean enum values and return as options
-                        return array_combine(
-                            array_map(fn($value) => trim($value, "'"), $enumValues),
-                            array_map(fn($value) => trim($value, "'"), $enumValues)
-                        );
-                    }
+                return [];
+            })
+            ->searchable()
+            ->required()
+            ->columnSpan(3), // Takes 3/12 columns
 
-                    return [];
-                })
-                ->searchable()
-                ->required(),
+        Forms\Components\TextInput::make('email_url')
+            ->label('Email URL')
+            ->placeholder('Enter the email URL here')
+            ->columnSpan(3), // Takes 3/12 columns
 
-            Forms\Components\TextInput::make('email_url')
-                ->label('Email url'),
+        // Third Row
+        Forms\Components\FileUpload::make('file_attachment_id')
+            ->label('File Attachment')
+            ->disk('project_uploads_dir')
+            ->visibility('public')
+            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword'])
+            ->columnSpan(12), // Takes 6/12 columns
 
-            Forms\Components\FileUpload::make('file_attachment_id')  // This is where the file will be uploaded
-                ->label('File Attachment')
-                ->disk('project_uploads_dir')  // Store file in the configured disk
-                ->visibility('public')  // Make the file publicly accessible if needed
-                ->acceptedFileTypes(
-                    array_map(function ($fileType) {
-                        switch ($fileType) {
-                            case 'pdf':
-                                return 'application/pdf';
-                            case 'jpg':
-                            case 'jpeg':
-                                return 'image/jpeg';
-                            case 'png':
-                                return 'image/png';
-                            case 'xlsx':
-                                return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-                            case 'docs':
-                                return 'application/msword';
-                            default:
-                                return null;
-                        }
-                    }, Attachment::getEnumValues('file_type'))
-                )
-                ->columnSpan('sm')
-                ->afterStateUpdated(function (callable $set, $state) {
+        Forms\Components\Repeater::make('comments')
+            ->label('Comments')
+            ->relationship('comments')
+            ->schema([
+                Forms\Components\Textarea::make('content')
+                    ->required()
+                    ->label('Comment Content'),
+                Forms\Components\Hidden::make('user_id')
+                    ->default(fn() => auth()->id()),
+            ])
+            ->createItemButtonLabel('Add Comment')
+            ->columnSpan(12), // Takes 6/12 columns
+    ])->columns(12); // Define the grid system with 12 columns
+}
 
-                    if ($state) {
-
-                        $filePath = $state->store('attachments', 'project_uploads_dir');  // Save the file to storage
-
-
-                        $attachment = Attachment::create([
-                            'attachmentable_type' => 'App\Models\Project',
-                            'attachmentable_id' => $set('project_id'),
-                            'file_url' => $filePath,
-                            'file_type' => $state->getMimeType(),  // Store the file's MIME type (e.g., PDF, JPEG, etc.)
-                        ]);
-
-                        // Now store the attachment ID in the project
-                        DB::table('projects')
-                            ->where('id', $set('project_id'))
-                            ->update(['file_attachment_id' => $attachment->id]);  // Save the attachment ID in the projects table
-                    }
-                }),
-            Forms\Components\Repeater::make('comments')
-                ->label('Comments')
-                ->relationship('comments') // Use the relationship defined in the Project model
-                ->schema([
-                    Forms\Components\Textarea::make('content')
-                        ->required()
-                        ->label('Comment Content'),
-                    Forms\Components\Hidden::make('user_id')
-                        ->default(fn() => auth()->id()), // Set the default value to the authenticated user's ID
-                ])
-                ->createItemButtonLabel('Add Comment'),
-
-        ]);
-    }
 
     public static function table(Tables\Table $table): Tables\Table
     {

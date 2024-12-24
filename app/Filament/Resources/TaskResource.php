@@ -27,74 +27,109 @@ class TaskResource extends Resource
 
     // Define the form for creating and editing tasks
     public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('project_id')
-                    ->label('Project')
-                    ->options(Project::all()->pluck('project_name', 'id')->toArray())
-                    ->searchable() // Added searchable to improve UX with many options
-                    ->required(),
+{
+    return $form
+        ->schema([
+            // First Row
+            Forms\Components\Grid::make(12)
+                ->schema([
+                    Forms\Components\Select::make('project_id')
+                        ->label('Project')
+                        ->options(Project::all()->pluck('project_name', 'id')->toArray())
+                        ->searchable()
+                        ->required()
+                        ->columnSpan(6),
 
-                Forms\Components\TextInput::make('description')
-                    ->label('Task Description')
-                    ->required(),
+                    Forms\Components\Select::make('category_id')
+                        ->label('Category')
+                        ->options(self::getHierarchicalCategories())
+                        ->searchable()
+                        ->required()
+                        ->columnSpan(6),
+                ]),
 
-                Forms\Components\Select::make('priority')
-                    ->label('Priority')
-                    ->options(function () {
-                        // Fetch the column details for the 'status' field
-                        $column = DB::select("SHOW COLUMNS FROM tasks WHERE Field = 'priority'");
-                        $type = $column[0]->Type ?? null;
+            // Second Row
+            Forms\Components\Grid::make(12)
+                ->schema([
+                    Forms\Components\TextInput::make('description')
+                        ->label('Task Description')
+                        ->required()
+                        ->columnSpan(6),
 
-                        if ($type) {
-                            // Extract enum values from the column definition
-                            preg_match('/enum\((.*)\)/', $type, $matches);
-                            $enumValues = isset($matches[1]) ? explode(',', $matches[1]) : [];
+                    Forms\Components\Select::make('priority')
+                        ->label('Priority')
+                        ->options(function () {
+                            $column = DB::select("SHOW COLUMNS FROM tasks WHERE Field = 'priority'");
+                            $type = $column[0]->Type ?? null;
 
-                            // Clean enum values and return as options
-                            return array_combine(
-                                array_map(fn($value) => trim($value, "'"), $enumValues),
-                                array_map(fn($value) => trim($value, "'"), $enumValues)
-                            );
-                        }
+                            if ($type) {
+                                preg_match('/enum\((.*)\)/', $type, $matches);
+                                $enumValues = isset($matches[1]) ? explode(',', $matches[1]) : [];
 
-                        return [];
-                    })
-                    ->searchable()
-                    ->required(),
-                Forms\Components\Select::make('category_id')
-                    ->label('Category')
-                    ->options(self::getHierarchicalCategories())
-                    ->searchable()
-                    ->required(),
+                                return array_combine(
+                                    array_map(fn($value) => trim($value, "'"), $enumValues),
+                                    array_map(fn($value) => trim($value, "'"), $enumValues)
+                                );
+                            }
 
-                // New Select component for assigning tasks to users
-                Forms\Components\Select::make('assignee_id')
-                    ->label('Assign To')
-                    ->options(User::all()->pluck('name', 'id')->toArray()) // Fetch all users
-                    ->searchable()
-                    ->required(), // Mark it required to ensure a user is always assigned
+                            return [];
+                        })
+                        ->searchable()
+                        ->required()
+                        ->columnSpan(6),
+                ]),
 
-                Forms\Components\DatePicker::make('due_date')
-                    ->label('Due date')
-                    ->default(now()->toDateString())  // Optionally set the default value to today's date
-                    ->format('Y-m-d'), // Format for date (adjust to your needs)
+            // Third Row
+            Forms\Components\Grid::make(12)
+                ->schema([
+                    Forms\Components\Select::make('assignee_id')
+                        ->label('Assign To')
+                        ->options(User::all()->pluck('name', 'id')->toArray())
+                        ->searchable()
+                        ->required()
+                        ->columnSpan(6),
 
-                Forms\Components\Repeater::make('comments')
-                    ->label('Comments')
-                    ->relationship('comments') // Use the relationship defined in the Project model
-                    ->schema([
-                        Forms\Components\Textarea::make('content')
-                            ->required()
-                            ->label('Comment Content'),
-                        Forms\Components\Hidden::make('user_id')
-                            ->default(fn() => auth()->id()), // Set the default value to the authenticated user's ID
-                    ])
-                    ->createItemButtonLabel('Add Comment'),
+                    Forms\Components\DatePicker::make('due_date')
+                        ->label('Due Date')
+                        ->default(now()->toDateString())
+                        ->format('Y-m-d')
+                        ->columnSpan(6),
+                ]),
 
-            ]);
-    }
+            // Fourth Row
+            Forms\Components\Grid::make(12)
+                ->schema([
+                    Forms\Components\FileUpload::make('file_attachment')
+                        ->label('File Attachment')
+                        ->disk('task_uploads_dir')
+                        ->visibility('public')
+                        ->acceptedFileTypes([
+                            'application/pdf',
+                            'image/jpeg',
+                            'image/png',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'application/msword',
+                        ])
+                        ->columnSpan(6)
+                        ->extraAttributes(['class' => 'same-height']), // Add a custom class
+
+                    Forms\Components\Repeater::make('comments')
+                        ->label('Comments')
+                        ->relationship('comments')
+                        ->schema([
+                            Forms\Components\Textarea::make('content')
+                                ->required()
+                                ->label('Comment Content'),
+                            Forms\Components\Hidden::make('user_id')
+                                ->default(fn() => auth()->id()),
+                        ])
+                        ->createItemButtonLabel('Add Comment')
+                        ->columnSpan(6)
+                        ->extraAttributes(['class' => 'same-height']), // Add a custom class
+                ]),
+        ]);
+}
+
 
     // Define query for fetching tasks with project relation
     protected function getTableQuery(): Builder
