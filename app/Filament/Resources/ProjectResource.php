@@ -16,19 +16,22 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Comment;
 use Parallax\FilamentComments\Forms\Components\Comments;
+use Forms\Components\Repeater;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-sparkles';
 
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
             Forms\Components\TextInput::make('project_name')
                 ->label('Project Name')
-                ->required(),
+                ->required()
+                ->placeholder('Enter the project name here') // Add placeholder
+                ->prefixIcon('heroicon-o-clipboard'), // Add an icon
 
             Forms\Components\Select::make('owner_id')
                 ->label('Author')
@@ -46,12 +49,12 @@ class ProjectResource extends Resource
                 ->label('Start date')
                 ->default(now()->toDateString())  // Optionally set the default value to today's date
                 ->format('Y-m-d') // Format for date (adjust to your needs)
-                ->columnSpan('sm'), // Adjust column layout as needed
+                ->columnSpan(''), // Adjust column layout as needed
 
             Forms\Components\DatePicker::make('end_date')
                 ->label('End date')
                 ->format('Y-m-d') // Format for date (adjust to your needs)
-                ->columnSpan('sm'), // Adjust column layout as needed
+                ->columnSpan('8'), // Adjust column layout as needed
 
             Forms\Components\Select::make('status')
                 ->label('Status')
@@ -103,18 +106,18 @@ class ProjectResource extends Resource
                         }
                     }, Attachment::getEnumValues('file_type'))
                 )
-                ->columnSpan('sm')  
+                ->columnSpan('sm')
                 ->afterStateUpdated(function (callable $set, $state) {
-                  
+
                     if ($state) {
-                    
+
                         $filePath = $state->store('attachments', 'project_uploads_dir');  // Save the file to storage
 
-                       
+
                         $attachment = Attachment::create([
-                            'attachmentable_type' => 'App\Models\Project', 
-                            'attachmentable_id' => $set('project_id'),  
-                            'file_url' => $filePath,  
+                            'attachmentable_type' => 'App\Models\Project',
+                            'attachmentable_id' => $set('project_id'),
+                            'file_url' => $filePath,
                             'file_type' => $state->getMimeType(),  // Store the file's MIME type (e.g., PDF, JPEG, etc.)
                         ]);
 
@@ -124,26 +127,17 @@ class ProjectResource extends Resource
                             ->update(['file_attachment_id' => $attachment->id]);  // Save the attachment ID in the projects table
                     }
                 }),
-
-                Forms\Components\Repeater::make('comments')
+            Forms\Components\Repeater::make('comments')
+                ->label('Comments')
+                ->relationship('comments') // Use the relationship defined in the Project model
                 ->schema([
-                    $commentId = Comment::createForProject(
-                        $projectId = 'project_id',  // Replace with the actual project ID
-                        auth()->user()->id,  // Get the authenticated user ID
-                        $content = 'comments' // The content from the form input
-                    ),
-                    
-                    // Optionally, fetch the comment by its ID
-                    $comment = Comment::getById($commentId)
-                        ->label('Comments')
-                        ->disabled(),  // Optional: disable editing comments from the form
+                    Forms\Components\Textarea::make('content')
+                        ->required()
+                        ->label('Comment Content'),
+                    Forms\Components\Hidden::make('user_id')
+                        ->default(fn() => auth()->id()), // Set the default value to the authenticated user's ID
                 ])
-                ->default(function ($get, $set) {
-                    // Automatically fetch comments for the related project
-                    $projectId = $get('project_id');
-                    return $projectId ? $projectId->comments()->orderBy('created_at', 'desc')->get() : [];
-                }),
-
+                ->createItemButtonLabel('Add Comment'),
 
         ]);
     }
