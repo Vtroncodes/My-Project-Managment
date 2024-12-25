@@ -12,13 +12,14 @@ return new class extends Migration
     public function up()
 {
     Schema::create('comments', function (Blueprint $table) {
-        $table->id();
+        $table->id(); // Primary key
         $table->morphs('commentable'); // Polymorphic relation (commentable_type, commentable_id)
-        $table->unsignedBigInteger('user_id');
-        $table->text('content');
-        $table->timestamps();
+        $table->unsignedBigInteger('user_id'); // User who made the comment
+        $table->text('content'); // Content of the comment
+        $table->timestamps(); // Created and updated timestamps
 
-        $table->foreign('user_id')->references('id')->on('users');
+        // Define foreign key constraint for user_id referencing the users table
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
     });
 }
 
