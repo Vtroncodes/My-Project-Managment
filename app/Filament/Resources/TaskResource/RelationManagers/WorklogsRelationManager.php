@@ -20,14 +20,16 @@ class WorklogsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('assignee_id')
-                    ->label('Assignee')
-                    ->relationship('assignee', 'name')
-                    ->options(User::all()->pluck('name', 'id')->toArray())
-                    ->searchable()
+                Forms\Components\Hidden::make('assignee_id')
+                    ->default(fn() => auth()->id())
                     ->required(),
+
+                Forms\Components\TextInput::make('assignee_name')
+                    ->label('Assignee')
+                    ->default(fn() => auth()->user()->name)
+                    ->disabled(), // Make the field read-only
                 Forms\Components\TextInput::make('hours')
-                    ->label('Hours Worked')
+                    ->label('Hours')
                     ->numeric()
                     ->required(),
                 Forms\Components\Textarea::make('description')

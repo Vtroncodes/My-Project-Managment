@@ -2,24 +2,23 @@
 
 namespace App\Filament\Resources;
 
-use Illuminate\Support\Facades\DB;
-use App\Filament\Resources\TaskResource\Pages;
-use App\Models\Task;
-use App\Models\Project;
-use App\Models\User;
-use App\Models\Category;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\Task;
+use App\Models\User;
 use Filament\Tables;
+use App\Models\Project;
+use App\Models\Category;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-
-use App\Filament\Resources\TaskResource\RelationManagers\WorkLogsRelationManager;
-
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\DateTimePicker;
+use App\Filament\Resources\TaskResource\Pages;
+use App\Filament\Resources\TaskResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\TaskResource\RelationManagers\WorkLogsRelationManager;
 
 class TaskResource extends Resource
 {
@@ -32,7 +31,7 @@ class TaskResource extends Resource
     {
         $inputClass = 'bg-blue-100 border-2 border-blue-500 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500';
         $fileClass = 'bg-gray-100 border-2 border-gray-500 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500';
-        
+
         return $form
             ->schema([
                 // First Row
@@ -123,26 +122,18 @@ class TaskResource extends Resource
                             ])
                             ->columnSpan(6)
                             ->extraAttributes(['class' => $fileClass]),
-
-                        Forms\Components\Repeater::make('comments')
-                            ->label('Comments')
-                            ->relationship('comments')
-                            ->schema([
-                                Forms\Components\Textarea::make('content')
-                                    ->required()
-                                    ->label('Comment Content')
-                                    ->extraAttributes(['class' => 'bg-blue-50 border-2 border-blue-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-300']),
-
-                                Forms\Components\Hidden::make('user_id')
-                                    ->default(fn() => auth()->id()),
-                            ])
-                            ->createItemButtonLabel('Add Comment')
-                            ->columnSpan(6)
-                            ->extraAttributes(['class' => $fileClass]),
                     ]),
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+
+            WorklogsRelationManager::class,
+            CommentsRelationManager::class,
+        ];
+    }
     // Define query for fetching tasks with project relation
     protected function getTableQuery(): Builder
     {
@@ -177,15 +168,6 @@ class TaskResource extends Resource
                     ->label('Assigned To')
                     ->sortable(),
 
-                TextColumn::make('comments')
-                    ->label('Latest Comment')
-                    ->sortable()
-                    ->getStateUsing(function ($record) {
-                        // Get the latest comment for the project (or task)
-                        $latestComment = $record->comments()->latest()->first();
-                        return $latestComment ? $latestComment->content : 'No comments';
-                    }),
-
                 TextColumn::make('due_date')
                     ->label('Due Date')
                     ->date()
@@ -199,16 +181,6 @@ class TaskResource extends Resource
             ->defaultSort('project_id');
     }
 
-    // Define the relations that can be managed (if any)
-    public static function getRelations(): array
-    {
-        return [
-            // Add any relation managers if necessary, e.g., for related tasks under projects
-            WorklogsRelationManager::class,
-        ];
-    }
-
-    // Define the pages for creating, editing, and listing tasks
     public static function getPages(): array
     {
         return [

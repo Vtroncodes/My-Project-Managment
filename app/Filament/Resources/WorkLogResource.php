@@ -61,24 +61,18 @@ class WorkLogResource extends Resource
                     ->extraAttributes(['class' => $inputClass]),
 
                 // Hidden field for assignee_id, defaulting to the current user's ID
-                Forms\Components\select::make('assignee_id')
-                    ->options(User::all()->pluck('name', 'id')->toArray())
-                    ->searchable()
-                    ->required()
-                  
-                    ->extraAttributes(['class' => $inputClass]),
+                Forms\Components\Hidden::make('assignee_id')
+                    ->default(fn() => auth()->id())
+                    ->required(),
 
-
-                // Text field to display the assignee's name, read-only
                 Forms\Components\TextInput::make('assignee_name')
-                    ->label('Assignee Name')
-                    ->default(auth()->user()->name)  // Default to the authenticated user's name
-                    ->readonly()
-                    ->extraAttributes(['class' => $inputClass]),
+                    ->label('Assignee')
+                    ->default(fn() => auth()->user()->name)
+                    ->disabled(), // Make the field read-only
 
                 // Textarea for entering hours logged
                 Forms\Components\Textarea::make('hours')
-                    ->label('Hour Log')
+                    ->label('Hours')
                     ->required()
                     ->extraAttributes(['class' => $inputClass]),
 
@@ -90,7 +84,7 @@ class WorkLogResource extends Resource
 
                 // Select field for status
                 Forms\Components\Select::make('status')
-                    ->label('Status')
+                    ->label('Task Status')
                     ->options([
                         'Pending' => 'Pending',
                         'In Progress' => 'In Progress',

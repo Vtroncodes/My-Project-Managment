@@ -28,8 +28,7 @@ class Project extends Model
 
     public function fileAttachment()
     {
-        // https://drive.google.com/file/d/1ysBJ27AbmGZlN6eDwMX_frNOzNACCIvi/view?usp=drive_link
-        // https://drive.google.com/file/d/14HVH1_VoyTwJNvJxMqQu1uYzoRoF1QmG/view?usp=drive_link
+    
         return $this->belongsTo(Attachment::class, 'file_attachment_id');
     }
 
@@ -50,5 +49,6 @@ class Project extends Model
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
+    
     
 }

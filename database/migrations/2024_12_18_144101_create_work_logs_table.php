@@ -18,8 +18,8 @@ return new class extends Migration
         $table->integer('hours')->default(0); // Default to 0
         $table->text('description')->default(' '); // Default to empty string
         $table->timestamps();    
-        $table->foreign('task_id')->references('id')->on('tasks');
-        $table->foreign('assignee_id')->references('id')->on('users');
+        $table->foreign('task_id')->references('id')->on('tasks') ->onDelete('cascade');;
+        $table->foreign('assignee_id')->references('id')->on('users')->onDelete('cascade');;
     });    
     
 }
