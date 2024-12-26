@@ -1,3 +1,5 @@
-.custom-nav-group .heroicon-s-briefcase {
-    color: #4CAF50; /* Example green color */
+.custom-comments-layout {
+    float: right;
+    width: 50%;  /* Or adjust based on your layout */
+    padding-left: 20px; /* Optional: spacing from the left */
 }

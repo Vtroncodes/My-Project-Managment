@@ -17,9 +17,11 @@ class CommentsRelationManager extends RelationManager
                 ->required()
                 ->label('Comment')
                 ->placeholder('Enter your comment here')
-                ->columns(4),  // No comma after columns
+                ->columns(4),
+            
             Forms\Components\Hidden::make('user_id')
                 ->default(fn() => auth()->id()),
+                
         ]);
     }
 

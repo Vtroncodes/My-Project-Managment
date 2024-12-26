@@ -22,6 +22,8 @@ use Filament\Tables\Filters\DateFilter;
 use App\Filament\Resources\TaskResource\Pages;
 use Filament\Tables\Filters\SelectFilter; // Import for SelectFilter
 use Illuminate\Support\HtmlString;
+use App\Filament\Resources\TaskResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\TaskResource\RelationManagers\WorklogsRelationManager;
 
 class TaskResource extends Resource
 {
@@ -43,8 +45,7 @@ class TaskResource extends Resource
                             ->searchable()
                             ->required()
                             ->columnSpan(6)
-                            ->helperText(new HtmlString('<p class="text-red-600" style="color:Tomato;"><sup> * </sup>Cannot Change The Project of Existing Task</p>')) // Styled helper text with color
-                             // Optional, adjust the alignment of the helper text
+                            ->helperText(new HtmlString('<p class="text-red-600" style="color:Tomato;"><sup> * </sup>Cannot Change The Project of Existing Task</p>'))
                             ->disabled(fn($state) => !empty($state)) // Disable if the task already has a project (i.e., editing a task)
                             ->default(fn($state) => $state ?? null), // Pre-fill with the existing project if editing
 
@@ -108,7 +109,13 @@ class TaskResource extends Resource
                     ]),
             ]);
     }
-
+    public static function getRelations(): array
+    {
+        return [
+            CommentsRelationManager::class,
+            WorklogsRelationManager::class,
+        ];
+    }
     public static function table(Table $table): Table
     {
         return $table
@@ -116,8 +123,6 @@ class TaskResource extends Resource
                 TextColumn::make('project.project_name')
                     ->label('Project')
                     ->sortable()
-                    ->tooltip('Cannot Edit') // Shows a tooltip when hovering over the text
-                    ->icon('heroicon-m-language') // Adds the icon next to the text
                     ->searchable(),
 
                 TextColumn::make('description')
