@@ -22,7 +22,7 @@ use Filament\Tables\Filters\DateFilter;
 use App\Filament\Resources\TaskResource\Pages;
 use Filament\Tables\Filters\SelectFilter; // Import for SelectFilter
 use Illuminate\Support\HtmlString;
-use App\Filament\Resources\TaskResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\TaskResource\RelationManagers\CommentRelationManager;
 use App\Filament\Resources\TaskResource\RelationManagers\WorklogsRelationManager;
 
 class TaskResource extends Resource
@@ -45,7 +45,7 @@ class TaskResource extends Resource
                             ->searchable()
                             ->required()
                             ->columnSpan(6)
-                            ->helperText(new HtmlString('<p class="text-red-600" style="color:Tomato;"><sup> * </sup>Cannot Change The Project of Existing Task</p>'))
+                            ->helperText(new HtmlString('<p class="text-red-600" style="color:blue;"><sup> * </sup>Cannot Change The Project of Existing Task</p>'))
                             ->disabled(fn($state) => !empty($state)) // Disable if the task already has a project (i.e., editing a task)
                             ->default(fn($state) => $state ?? null), // Pre-fill with the existing project if editing
 
@@ -112,7 +112,7 @@ class TaskResource extends Resource
     public static function getRelations(): array
     {
         return [
-            CommentsRelationManager::class,
+            CommentRelationManager::class,
             WorklogsRelationManager::class,
         ];
     }

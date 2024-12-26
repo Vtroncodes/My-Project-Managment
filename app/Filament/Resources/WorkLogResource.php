@@ -17,6 +17,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Category;
+use LaraZeus\Quantity\Components\Quantity;
 
 class WorkLogResource extends Resource
 {
@@ -71,13 +72,17 @@ class WorkLogResource extends Resource
                     ->disabled(), // Make the field read-only
 
                 // Textarea for entering hours logged
-                Forms\Components\Textarea::make('hours')
-                    ->label('Hours')
-                    ->required()
-                    ->extraAttributes(['class' => $inputClass]),
+                Quantity::make('hours')
+                    ->label('Hours')            
+                    ->heading('Enter Hours...')
+                    ->default(1)                 
+                    ->minValue(0)
+                    ->stacked()
+                    ->steps(1)
+                    ->extraAttributes(['class' => ' border-2 border-blue-500 p-4 rounded-md shadow-lg'])   ,
 
                 // Textarea for entering a description
-                Forms\Components\Textarea::make('description')
+                Forms\Components\RichEditor::make('description')
                     ->label('Description')
                     ->nullable()
                     ->extraAttributes(['class' => $fileClass]),

@@ -3,3 +3,10 @@
     width: 50%;  /* Or adjust based on your layout */
     padding-left: 20px; /* Optional: spacing from the left */
 }
+.custom-quantity-container {
+    border: 2px solid #ccc;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+}

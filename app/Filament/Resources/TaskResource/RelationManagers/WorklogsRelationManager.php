@@ -4,12 +4,14 @@ namespace App\Filament\Resources\TaskResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
+use Forms\Components\NumberInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\User;
+use LaraZeus\Quantity\Components\Quantity;
 
 class WorklogsRelationManager extends RelationManager
 {
@@ -28,15 +30,25 @@ class WorklogsRelationManager extends RelationManager
                     ->label('Assignee')
                     ->default(fn() => auth()->user()->name)
                     ->disabled(), // Make the field read-only
-                Forms\Components\TextInput::make('hours')
-                    ->label('Hours')
-                    ->numeric()
-                    ->required(),
+
+                // "Hours" field with validation and float formatting
+                Quantity::make('hours')
+                    ->label('Hours')            
+                    ->heading('Enter Hours...')
+                    ->default(1)                 
+                    ->minValue(0)
+                    ->stacked()
+                    ->steps(1)
+                    ->extraAttributes(['class' => ' border-2 border-blue-500 p-4 rounded-md shadow-lg'])   ,
+
+                // "Description" field spanning 12 columns
                 Forms\Components\Textarea::make('description')
                     ->label('Description')
-                    ->required(),
+                    ->required()
+                    ->columnSpan(12),  // Make the description field span 12 columns
             ]);
     }
+
 
     public function table(Table $table): Table
     {

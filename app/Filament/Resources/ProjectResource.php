@@ -10,7 +10,7 @@ use App\Models\Attachment;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\ProjectResource\Pages;
-use App\Filament\Resources\ProjectResource\RelationManagers\CommentsRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\CommentRelationManager;
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
@@ -51,7 +51,7 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            CommentsRelationManager::class,
+            CommentRelationManager::class,
         ];
     }
     
