@@ -13,10 +13,11 @@ class Attachment extends Model
     /**
      * Get the parent attachable model (project or task).
      */
-    public function attachmentable(): MorphTo
+    public function project()
     {
-        return $this->morphTo();
+        return $this->hasOne(Project::class, 'file_attachment_id');
     }
+    
     public static function getEnumValues($column)
     {
         $type = DB::selectOne("SHOW COLUMNS FROM attachments WHERE Field = ?", [$column])->Type;

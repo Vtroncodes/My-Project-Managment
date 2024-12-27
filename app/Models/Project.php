@@ -26,12 +26,11 @@ class Project extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function fileAttachment()
+    public function attachment()
     {
-    
         return $this->belongsTo(Attachment::class, 'file_attachment_id');
     }
-
+    
     public function tasks()
     {
         return $this->hasMany(Task::class, 'project_id');
