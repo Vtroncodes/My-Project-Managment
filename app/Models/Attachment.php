@@ -8,15 +8,20 @@ use Illuminate\Support\Facades\DB;
 
 class Attachment extends Model
 {
-    protected $fillable = ['file_url', 'file_type', 'attachmentable_type', 'attachmentable_id'];
-
+    protected $fillable = [
+        'attachmentable_type',
+        'attachmentable_id',
+        'file_url',
+        'file_type', // Optional: if you want to store the file type
+    ];
     /**
      * Get the parent attachable model (project or task).
      */
-    public function project()
+    public function attachmentable()
     {
-        return $this->hasOne(Project::class, 'file_attachment_id');
+        return $this->morphTo();
     }
+    
     
     public static function getEnumValues($column)
     {
