@@ -14,9 +14,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers\CommentRelationManager;
+use App\Filament\Resources\ProjectResource\RelationManagers\AttachmentsRelationManager;
 use App\Filament\Resources\Log;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Support\Facades\Date;
@@ -57,62 +57,20 @@ class ProjectResource extends Resource
                 ->required()
                 ->columnSpan(3),
 
-                Forms\Components\RichEditor::make('description')
+            Forms\Components\RichEditor::make('description')
                 ->label('Description')
                 ->required()
                 ->columnSpan(12)
-                ->helperText(new HtmlString('<strong class="text-red-600" style="color:orange;"><sup> * </sup>in 250 Words only...</strong>'))
-                ->maxLength(1250),
-
-
-            FileUpload::make('file_attachment')
-                ->label('Attachment')
-                ->directory('uploads/project_uploads_dir')
-                ->disk('public')
-                ->acceptedFileTypes(['application/pdf', 'image/*'])
-                ->preserveFilenames()
-
-                ->saveUploadedFileUsing(function ($file, $state, $set, $record) {
-                    if (!$file) {
-                        throw new \Exception("No file uploaded.");
-                    }
-
-                    // Store the file
-                    $path = $file->store('uploads/project_uploads_dir', 'public');
-                    if (!$path) {
-                        throw new \Exception("File could not be saved.");
-                    }
-
-                    // Save attachment entry
-                    $attachment = Attachment::create([
-                        'attachmentable_type' => Project::class,
-                        'attachmentable_id' => $record->id ?? null,
-                        'file_url' => $path,
-
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    // Associate attachment with project
-                    if ($record) {
-                        $record->file_attachment_id = $attachment->id;
-                        $record->save();
-                    }
-
-                    return $path;
-                })
-                ->columnSpan(12),
 
 
         ])->columns(12);
-        // Log::info(Storage::url('uploads/project_uploads_dir/sample.pdf'));
-
     }
 
     public static function getRelations(): array
     {
         return [
             CommentRelationManager::class,
+            AttachmentsRelationManager::class,
         ];
     }
 
@@ -128,15 +86,7 @@ class ProjectResource extends Resource
                 Tables\Columns\TextColumn::make('owner.name')->label('Owner')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Created At')->dateTime(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Updated At')->dateTime(),
-                ImageColumn::make('file_url') // Assuming 'file_url' stores the image path
-                    ->label('File')
-                    ->disk('public') // Make sure the file is accessible via the 'public' disk
-                    ->width(100) // Optional: Set the width of the displayed image
-                    ->height(100), // Optional: Set the height of the displayed image
-                TextColumn::make('file_url') // Assuming 'file_url' stores the file path
-                    ->label('Attached File')
-                    ->formatStateUsing(fn($state) => '<a href="' . asset('storage/' . $state) . '" target="_blank">Download</a>')
-                    ->html(), // This ensures the link is rendered as HTML
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

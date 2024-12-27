@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $fillable = ['content', 'user_id', 'commentable_type', 'commentable_id'];
+    protected $fillable = ['comment_description', 'user_id', 'commentable_type', 'commentable_id'];
     // Polymorphic relationship
     public function commentable()
     {

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\Comments;
+
 class Project extends Model
 {
     use HasFactory;
@@ -30,16 +31,18 @@ class Project extends Model
     {
         return $this->belongsTo(Attachment::class, 'file_attachment_id');
     }
-    
+
     public function tasks()
     {
         return $this->hasMany(Task::class, 'project_id');
     }
-    public function attachments(): MorphMany
+    public function attachments()
     {
         return $this->morphMany(Attachment::class, 'attachmentable');
     }
-   
+
+
+
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
@@ -48,6 +51,4 @@ class Project extends Model
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
-    
-    
 }

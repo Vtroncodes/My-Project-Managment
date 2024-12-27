@@ -23,7 +23,7 @@ class Task extends Model
         return $this->belongsTo(Project::class, 'project_id', 'id');
     }    
     
-    public function attachments(): MorphMany
+    public function attachments()
     {
         return $this->morphMany(Attachment::class, 'attachmentable');
     }

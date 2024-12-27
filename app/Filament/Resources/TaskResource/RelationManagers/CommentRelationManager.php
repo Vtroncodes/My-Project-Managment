@@ -16,12 +16,12 @@ class CommentRelationManager extends RelationManager
             Forms\Components\Grid::make(12)
                 ->schema([
                     // RichEditor for the comment
-                    Forms\Components\RichEditor::make('content')
+                    Forms\Components\RichEditor::make('comment_description')
                         ->required()
                         ->label('Comment')
                         ->placeholder('Enter your comment here')
                         ->columnSpan(12),  // Adjust this to how many columns you want the editor to span
-    
+                        
                     // Hidden field for user_id
                     Forms\Components\Hidden::make('user_id')
                         ->default(fn() => auth()->id()),
@@ -35,7 +35,7 @@ class CommentRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')->label('Author'),
-                Tables\Columns\TextColumn::make('content')->label('Comment'),
+                Tables\Columns\TextColumn::make('comment_description')->label('Comment')->html(),
                 Tables\Columns\TextColumn::make('created_at')->label('Date')->dateTime(),
             ])
             ->headerActions([
